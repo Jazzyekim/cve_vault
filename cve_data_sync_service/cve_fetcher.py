@@ -7,6 +7,7 @@ import aiohttp
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 async def run_command(command, cwd=None):
     process = await asyncio.create_subprocess_exec(
         *command,
@@ -23,6 +24,7 @@ async def run_command(command, cwd=None):
         logging.error(line.decode('utf-8').strip())
 
     await process.wait()
+
 
 async def initial_clone():
     repo_url = "https://github.com/CVEProject/cvelistV5"
@@ -43,8 +45,10 @@ async def initial_clone():
         except asyncio.SubprocessError as e:
             logging.error(f"Error updating repository: {e}")
 
+
 import aioschedule as schedule
 import time
+
 
 async def fetch_cve_updates():
     url = "https://api.github.com/repos/CVEProject/cvelistV5/commits"
@@ -57,6 +61,7 @@ async def fetch_cve_updates():
                 print(f"Failed to fetch CVE updates: {response.status}")
                 return None
 
+
 async def update_cve_data():
     updates = await fetch_cve_updates()
     if updates:
@@ -66,6 +71,7 @@ async def update_cve_data():
     else:
         print("No updates fetched.")
 
+
 async def schedule_cve_updates(interval_hours):
     await update_cve_data()
     schedule.every(interval_hours).hours.do(update_cve_data)
@@ -73,7 +79,7 @@ async def schedule_cve_updates(interval_hours):
         await schedule.run_pending()
         await asyncio.sleep(1)
 
+
 # Виклик функції для періодичного завантаження змін
 interval_hours = 6  # наприклад, кожні 6 годин
 asyncio.run(schedule_cve_updates(interval_hours))
-

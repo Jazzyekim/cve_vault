@@ -1,0 +1,2 @@
+db:
+  uri: "postgresql+asyncpg://demo:demo@localhost/demo"

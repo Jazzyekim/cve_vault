@@ -1,6 +1,6 @@
 *.iml
 
-cve_data_sync/cve_data
+cve_data_sync_service/cve_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

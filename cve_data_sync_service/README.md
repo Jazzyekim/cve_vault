@@ -1,4 +1,4 @@
-# CVE DataSync
+# CVE Data Sync Service
 
 **CVE DataSync** is a service designed to periodically fetch, update, and store the latest CVE (Common Vulnerabilities and Exposures) data from the official CVE repository. It ensures that your local data is always up-to-date, providing a reliable source of information for security analysis and reporting.
 
@@ -23,7 +23,7 @@ To start the CVE DataSync service, simply run the following command:
 
 
 ```bash
-python cve_fetcher.py
+python main.py
 ```
 
 By default, the service will:
