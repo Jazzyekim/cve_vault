@@ -1,2 +1,6 @@
 db:
   uri: "postgresql+asyncpg://demo:demo@localhost/demo"
+cve_repo:
+  repo_url: "https://github.com/CVEProject/cvelistV5"
+  data_dir: cve_data
+  interval_update: 6

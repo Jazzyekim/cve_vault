@@ -1,10 +1,11 @@
 import asyncio
-import os
 import logging
+import os
 
 import aiohttp
 
-# Configure logging
+from cve_data_sync_service import SYNC_CONFIG
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
@@ -12,11 +13,10 @@ async def run_command(command, cwd=None):
     process = await asyncio.create_subprocess_exec(
         *command,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,  # Capture stderr for any error messages
+        stderr=asyncio.subprocess.PIPE,
         cwd=cwd
     )
 
-    # Read stdout and stderr without processing them further
     async for line in process.stdout:
         logging.info(line.decode('utf-8').strip())
 
@@ -27,8 +27,8 @@ async def run_command(command, cwd=None):
 
 
 async def initial_clone():
-    repo_url = "https://github.com/CVEProject/cvelistV5"
-    clone_dir = "cve_data"
+    repo_url = SYNC_CONFIG['repo_url']
+    clone_dir = SYNC_CONFIG['data_dir']
 
     if not os.path.exists(clone_dir):
         try:
@@ -47,7 +47,6 @@ async def initial_clone():
 
 
 import aioschedule as schedule
-import time
 
 
 async def fetch_cve_updates():
@@ -65,9 +64,9 @@ async def fetch_cve_updates():
 async def update_cve_data():
     updates = await fetch_cve_updates()
     if updates:
-        # Обробка оновлень та збереження їх у базу даних
+
         print(f"Fetched {len(updates)} updates.")
-        # (обробка та оновлення бази даних тут)
+
     else:
         print("No updates fetched.")
 
@@ -79,7 +78,5 @@ async def schedule_cve_updates(interval_hours):
         await schedule.run_pending()
         await asyncio.sleep(1)
 
-
-# Виклик функції для періодичного завантаження змін
-interval_hours = 6  # наприклад, кожні 6 годин
+interval_hours = SYNC_CONFIG['interval_update']
 asyncio.run(schedule_cve_updates(interval_hours))
