@@ -82,7 +82,7 @@ async def cve_data_fetch():
         except CalledProcessError as e:
             logging.error(f"Error cloning repository: {e}")
 
-    interval_hours = SYNC_CONFIG['interval_update']
+    interval_hours = SYNC_CONFIG['update_interval_hours']
     logging.info(f"Repository is pulled to {clone_dir}, schedule regular fetch every {interval_hours} hours.")
     try:
         await schedule_cve_updates(interval_hours)

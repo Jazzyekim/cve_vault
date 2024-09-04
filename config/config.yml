@@ -5,4 +5,4 @@ cve_repo:
   repo_url: "https://github.com/CVEProject/cvelistV5"
   commits_url: "${cve_repo.repo_url}/commits"
   data_dir: cve_data
-  interval_update: 6
+  update_interval_hours: 6
