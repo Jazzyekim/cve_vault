@@ -1,5 +1,6 @@
 db:
   uri: "postgresql+asyncpg://demo:demo@localhost/demo"
+  echo: ${oc.env:DB_ECHO,"false"}
 cve_repo:
   repo_url: "https://github.com/CVEProject/cvelistV5"
   commits_url: "${cve_repo.repo_url}/commits"
