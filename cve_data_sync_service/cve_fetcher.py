@@ -4,6 +4,7 @@ import os
 from subprocess import CalledProcessError
 
 import aiohttp
+import aioschedule as schedule
 
 from cve_data_sync_service import SYNC_CONFIG
 
@@ -35,7 +36,37 @@ async def is_git_installed():
         return False
 
 
-async def initial_clone():
+async def fetch_cve_updates():
+    url = SYNC_CONFIG['commits_url']
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                updates = await response.json()
+                return updates
+            else:
+                logging.error(f"Failed to fetch CVE updates: {response.status}")
+                return None
+
+
+async def update_cve_data():
+    updates = await fetch_cve_updates()
+    if updates:
+
+        logging.info(f"Fetched {len(updates)} updates.")
+
+    else:
+        logging.info("No updates fetched.")
+
+
+async def schedule_cve_updates(interval_hours):
+    await update_cve_data()
+    schedule.every(interval_hours).minute.do(update_cve_data)
+    while True:
+        await schedule.run_pending()
+        await asyncio.sleep(1)
+
+
+async def cve_data_fetch():
     if not await is_git_installed():
         logging.error("Git is not installed. Please install Git to proceed.")
         return
@@ -50,47 +81,16 @@ async def initial_clone():
             logging.info(f"Repository cloned successfully into {clone_dir}")
         except CalledProcessError as e:
             logging.error(f"Error cloning repository: {e}")
-    else:
-        logging.info(f"Repository already exists in {clone_dir}, pulling latest changes.")
-        try:
-            await run_command(["git", "pull"], cwd=clone_dir)
-            logging.info("Repository updated successfully.")
-        except CalledProcessError as e:
-            logging.error(f"Error updating repository: {e}")
+
+    interval_hours = SYNC_CONFIG['interval_update']
+    logging.info(f"Repository is pulled to {clone_dir}, schedule regular fetch every {interval_hours} hours.")
+    try:
+        await schedule_cve_updates(interval_hours)
+    except CalledProcessError as e:
+        logging.error(f"Error updating repository: {e}")
 
 
-import aioschedule as schedule
+asyncio.run(cve_data_fetch())
 
-
-async def fetch_cve_updates():
-    url = "https://api.github.com/repos/CVEProject/cvelistV5/commits"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                updates = await response.json()
-                return updates
-            else:
-                print(f"Failed to fetch CVE updates: {response.status}")
-                return None
-
-
-async def update_cve_data():
-    updates = await fetch_cve_updates()
-    if updates:
-
-        print(f"Fetched {len(updates)} updates.")
-
-    else:
-        print("No updates fetched.")
-
-
-async def schedule_cve_updates(interval_hours):
-    await update_cve_data()
-    schedule.every(interval_hours).hours.do(update_cve_data)
-    while True:
-        await schedule.run_pending()
-        await asyncio.sleep(1)
-
-
-interval_hours = SYNC_CONFIG['interval_update']
-asyncio.run(schedule_cve_updates(interval_hours))
+if __name__ == "__main__":
+    asyncio.run(cve_data_fetch())
