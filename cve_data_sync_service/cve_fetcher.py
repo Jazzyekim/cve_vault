@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from subprocess import CalledProcessError
 
 import aiohttp
 
@@ -47,14 +48,14 @@ async def initial_clone():
             logging.info(f"Cloning repository into {clone_dir}...")
             await run_command(["git", "clone", repo_url, "--depth=1", clone_dir])
             logging.info(f"Repository cloned successfully into {clone_dir}")
-        except asyncio.SubprocessError as e:
+        except CalledProcessError as e:
             logging.error(f"Error cloning repository: {e}")
     else:
         logging.info(f"Repository already exists in {clone_dir}, pulling latest changes.")
         try:
             await run_command(["git", "pull"], cwd=clone_dir)
             logging.info("Repository updated successfully.")
-        except asyncio.SubprocessError as e:
+        except CalledProcessError as e:
             logging.error(f"Error updating repository: {e}")
 
 
