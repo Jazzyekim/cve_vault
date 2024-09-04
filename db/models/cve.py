@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Text
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 
-from models import Base
+from db.models import Base
 
 
 class CVERecordDB(Base):

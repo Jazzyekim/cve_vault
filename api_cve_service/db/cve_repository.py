@@ -1,8 +1,7 @@
 from collections.abc import Sequence
 from typing import Annotated
 
-# from cve_vault import deps
-from models.cve import CVERecordDB
+from db.models.cve import CVERecordDB
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
