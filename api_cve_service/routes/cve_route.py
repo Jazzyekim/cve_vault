@@ -66,3 +66,14 @@ async def add_cve_record(record: CVERecord,
     cve_record_db = await repo.add_cve_record(record)
     response.status_code = 201
     return CVERecord.model_validate(cve_record_db)
+
+@cve_api.put("/{cve_id}",
+             name="Update CVERecord",
+             description="Updates an existing CVERecord by ID",
+             status_code=200)
+async def update_cve_record(cve_id: str,
+                            record: CVERecord,
+                            repo: Annotated[CVERepository, Depends(get_cve_repository)],
+                            response: Response) -> CVERecord:
+    updated_record_db = await repo.update_cve_record(cve_id, record)
+    return CVERecord.model_validate(updated_record_db)
