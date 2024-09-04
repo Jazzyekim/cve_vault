@@ -16,8 +16,9 @@ class CVERepository:
     def __init__(self, db: Annotated[AsyncSession, Depends(deps.get_db_session)]):
         self.db = db
 
-    async def get_all_cve(self) -> Sequence[CVERecordDB]:
-        stmt = (select(CVERecordDB).order_by(CVERecordDB.id))
+    async def get_all_cve(self, limit: int, offset: int) -> Sequence[CVERecordDB]:
+        stmt = (select(CVERecordDB).order_by(CVERecordDB.id).limit(limit)
+                .offset(offset))
         result = await self.db.execute(stmt)
         return result.scalars().all()
 

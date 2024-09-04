@@ -1,9 +1,11 @@
 from typing import Annotated, Sequence
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import Query
 
-from db.cve_repository import CVERepository, get_cve_repository
 from api_cve_service.schemas import CVERecord
+from db.cve_repository import CVERepository, get_cve_repository
 
 cve_api = APIRouter(prefix="/cve_records")
 
@@ -11,8 +13,11 @@ cve_api = APIRouter(prefix="/cve_records")
 @cve_api.get("/",
              name="Get all CVERecord",
              description="Returns all registered CVERecords")
-async def get_all_cve(repo: Annotated[CVERepository, Depends(get_cve_repository)]) -> Sequence[CVERecord]:
-    return await repo.get_all_cve()
+async def get_all_cve(repo: Annotated[CVERepository, Depends(get_cve_repository)],
+                      limit: Optional[int] = Query(10, description="Limit the number of CVERecords returned"),
+                      offset: Optional[int] = Query(0, description="Offset for pagination")
+                      ) -> Sequence[CVERecord]:
+    return await repo.get_all_cve(limit=limit, offset=offset)
 
 
 @cve_api.get("/{cve_id}",
