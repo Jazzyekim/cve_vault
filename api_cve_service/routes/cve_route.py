@@ -25,17 +25,19 @@ async def get_all_cve(repo: Annotated[CVERepository, Depends(get_cve_repository)
 
 
 @cve_api.get("/search",
-             name="Search CVERecords by Published Date Range",
-             description="Search CVERecords within a specified published date range")
-async def search_cve_by_date(
+             name="Search CVERecords",
+             description="Allows to search CVERecords within a specified published date range "
+                         "and/or by text in title or description")
+async def search_cve(
         repo: Annotated[CVERepository, Depends(get_cve_repository)],
+        text: Optional[str] = Query(None, description="Text to search in the title and description"),
         start_date: Optional[datetime] = Query(None, description="Start date for the search range "
                                                                  "in ISO 8601 format (e.g., 2021-01-01T00:00:00Z)"),
         end_date: Optional[datetime] = Query(None, description="End date for the search range "
                                                                "in ISO 8601 format (e.g., 2021-12-31T23:59:59Z)")
 ) -> Sequence[CVERecord]:
     logging.warning(f"Searching CVERecords within {start_date} to {end_date}")
-    cve_list = await repo.search_cve_by_published_date(start_date=start_date, end_date=end_date)
+    cve_list = await repo.search_cve_records(start_date=start_date, end_date=end_date, text=text)
     return [CVERecord.model_validate(cve) for cve in cve_list]
 
 

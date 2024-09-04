@@ -6,6 +6,7 @@ from db.models.cve import CVERecordDB
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import or_
 
 from api_cve_service.schemas import CVERecord
 
@@ -41,14 +42,23 @@ class CVERepository:
         self.db.add_all(records)
         await self.db.commit()
 
-    async def search_cve_by_published_date(self, start_date: Optional[datetime], end_date: Optional[datetime]
-                                           ) -> Sequence[CVERecordDB]:
+    async def search_cve_records(self,
+                                 start_date: Optional[datetime],
+                                 end_date: Optional[datetime],
+                                 text: Optional[str]
+                                 ) -> Sequence[CVERecordDB]:
         stmt = select(CVERecordDB).order_by(CVERecordDB.id)
 
         if start_date:
             stmt = stmt.where(CVERecordDB.date_published >= start_date)
         if end_date:
             stmt = stmt.where(CVERecordDB.date_published <= end_date)
+        if text is not None:
+            stmt = (
+                stmt.where(or_(
+                        CVERecordDB.title.ilike(f"%{text}%"),
+                        CVERecordDB.description.ilike(f"%{text}%"))
+                ))
 
         logger.info("Executing query: %s", stmt.compile(compile_kwargs={"literal_binds": True}))
 
