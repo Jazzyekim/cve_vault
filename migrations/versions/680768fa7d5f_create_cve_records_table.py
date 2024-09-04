@@ -1,8 +1,8 @@
 """create cve_records table
 
-Revision ID: f2f65dd04a75
+Revision ID: 680768fa7d5f
 Revises: 
-Create Date: 2024-09-03 21:56:01.299418
+Create Date: 2024-09-04 12:26:36.179898
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'f2f65dd04a75'
+revision: str = '680768fa7d5f'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
