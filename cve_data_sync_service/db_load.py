@@ -17,7 +17,7 @@ class DbDataLoader:
         self.batch_size = batch_size
         pass
 
-    async def batch_data(self, file_path, cve_batch: List[CVERecordDB]):
+    async def cve_from_file(self, file_path):
         async with aiofiles.open(file_path, 'r', encoding='utf-8') as f:
             content = await f.read()
             data = json.loads(content)
@@ -35,8 +35,16 @@ class DbDataLoader:
                 date_published = datetime.fromisoformat(published_)
                 date_updated = datetime.fromisoformat(data['cveMetadata']['dateUpdated'])
                 cve: CVERecordDB = make_cve(cve_id, title, description, date_published, date_updated)
+                return cve
+            else:
+                return None
 
-                cve_batch.append(cve)
+
+    async def batch_data(self, file_path, cve_batch: List[CVERecordDB]):
+        cve = await self.cve_from_file(file_path)
+        if cve is not None:
+            cve_batch.append(cve)
+
 
     async def scan_directory(self, data_path=SYNC_CONFIG['data_dir']):
         cve_batch: List[CVERecordDB] = []
