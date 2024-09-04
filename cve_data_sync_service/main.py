@@ -60,8 +60,8 @@ async def schedule_cve_updates(interval_hours):
     SECONDS_IN_HOUR = 3600
     interval = interval_hours * SECONDS_IN_HOUR
     while True:
-        await update_cve_data()
         await asyncio.sleep(interval)
+        await update_cve_data()
 
 
 async def cve_data_fetch():
