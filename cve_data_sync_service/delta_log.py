@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 from datetime import datetime
 
@@ -8,6 +9,8 @@ import aiofiles
 from api_cve_service.schemas import CVERecord
 from cve_data_sync_service import SYNC_CONFIG
 from db.deps import get_db_session
+
+logger = logging.getLogger(__name__)
 
 DELTA_LOG_PATH = SYNC_CONFIG['delta_log_path']
 ROOT_FOLDER = SYNC_CONFIG['cves_folder']
@@ -56,6 +59,7 @@ async def get_last_fetch_time():
 
 
 async def read_delta_log(last_fetch_time):
+    logger.info("Last Fetch Time: %s", last_fetch_time)
     object_lines = []
 
     async with aiofiles.open(DELTA_LOG_PATH, mode='r') as file:
@@ -66,6 +70,7 @@ async def read_delta_log(last_fetch_time):
                 fetch_time = datetime.fromisoformat(fetch_time_str.replace('Z', '+00:00'))
 
                 if last_fetch_time is None or fetch_time > last_fetch_time:
+                    logger.info("New update with fetch time: %s", fetch_time)
                     pass
                 else:
                     if len(object_lines) <= 3:
@@ -89,6 +94,7 @@ def extract_cve_ids(json_content: str):
         "updated_cves": updated_cves
     }
 
+
 from db_load import DbDataLoader
 from db.cve_repository import CVERepository
 
@@ -103,14 +109,14 @@ async def get_and_process_updates(last_fetch_time):
             cve_record = await DbDataLoader().cve_from_file(file_path)
             async for db in get_db_session():
                 async with db as session:
-                    print("NEW", cve_record)
+                    logger.info("NEW record: %s", cve_record)
                     await CVERepository(session).add_cve_record(CVERecord.model_validate(cve_record))
         for cve in cve_ids["updated_cves"]:
             file_path = await search_file(cve)
             cve_record = await DbDataLoader().cve_from_file(file_path)
             async for db in get_db_session():
                 async with db as session:
-                    print("UPDATE", cve_record)
+                    logger.info("UPDATE record: %s", cve_record)
                     await CVERepository(session).update_cve_record(cve_record.id, CVERecord.model_validate(cve_record))
 
 
