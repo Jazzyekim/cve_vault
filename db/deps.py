@@ -24,6 +24,7 @@ class DatabaseEngineSingleton:
 def get_engine() -> AsyncEngine:
     return DatabaseEngineSingleton().get_engine()
 
+
 async def get_db_session() -> AsyncIterator[AsyncSession]:
     engine = get_engine()
     session_factory = async_sessionmaker(engine)

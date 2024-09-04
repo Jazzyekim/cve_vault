@@ -6,3 +6,4 @@ cve_repo:
   commits_url: "${cve_repo.repo_url}/commits"
   data_dir: cve_data
   update_interval_hours: 6
+  batch_size: 1000
