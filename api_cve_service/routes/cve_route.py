@@ -2,7 +2,7 @@ from typing import Annotated, Sequence
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 
-from api_cve_service.db.cve_repository import CVERepository, get_cve_repository
+from db.cve_repository import CVERepository, get_cve_repository
 from api_cve_service.schemas import CVERecord
 
 cve_api = APIRouter(prefix="/cve_records")
