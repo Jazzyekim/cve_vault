@@ -34,10 +34,13 @@ async def search_cve(
         start_date: Optional[datetime] = Query(None, description="Start date for the search range "
                                                                  "in ISO 8601 format (e.g., 2021-01-01T00:00:00Z)"),
         end_date: Optional[datetime] = Query(None, description="End date for the search range "
-                                                               "in ISO 8601 format (e.g., 2021-12-31T23:59:59Z)")
+                                                               "in ISO 8601 format (e.g., 2021-12-31T23:59:59Z)"),
+
+        limit: Optional[int] = Query(10, description="Limit the number of CVERecords returned"),
+        offset: Optional[int] = Query(0, description="Offset for pagination")
 ) -> Sequence[CVERecord]:
     logging.warning(f"Searching CVERecords within {start_date} to {end_date}")
-    cve_list = await repo.search_cve_records(start_date=start_date, end_date=end_date, text=text)
+    cve_list = await repo.search_cve_records(start_date=start_date, end_date=end_date, text=text, limit=limit, offset=offset)
     return [CVERecord.model_validate(cve) for cve in cve_list]
 
 

@@ -45,9 +45,11 @@ class CVERepository:
     async def search_cve_records(self,
                                  start_date: Optional[datetime],
                                  end_date: Optional[datetime],
-                                 text: Optional[str]
+                                 text: Optional[str],
+                                 limit: int,
+                                 offset: int
                                  ) -> Sequence[CVERecordDB]:
-        stmt = select(CVERecordDB).order_by(CVERecordDB.id)
+        stmt = select(CVERecordDB).order_by(CVERecordDB.id).limit(limit).offset(offset)
 
         if start_date:
             stmt = stmt.where(CVERecordDB.date_published >= start_date)
