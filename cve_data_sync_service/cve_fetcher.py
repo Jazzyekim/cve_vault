@@ -26,7 +26,19 @@ async def run_command(command, cwd=None):
     await process.wait()
 
 
+async def is_git_installed():
+    try:
+        await run_command(["git", "--version"])
+        return True
+    except (FileNotFoundError, CalledProcessError):
+        return False
+
+
 async def initial_clone():
+    if not await is_git_installed():
+        logging.error("Git is not installed. Please install Git to proceed.")
+        return
+
     repo_url = SYNC_CONFIG['repo_url']
     clone_dir = SYNC_CONFIG['data_dir']
 
@@ -77,6 +89,7 @@ async def schedule_cve_updates(interval_hours):
     while True:
         await schedule.run_pending()
         await asyncio.sleep(1)
+
 
 interval_hours = SYNC_CONFIG['interval_update']
 asyncio.run(schedule_cve_updates(interval_hours))
