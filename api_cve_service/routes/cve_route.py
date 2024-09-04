@@ -1,3 +1,5 @@
+import logging
+from datetime import datetime
 from typing import Annotated, Sequence
 from typing import Optional
 
@@ -8,6 +10,7 @@ from api_cve_service.schemas import CVERecord
 from db.cve_repository import CVERepository, get_cve_repository
 
 cve_api = APIRouter(prefix="/cve_records")
+logger = logging.getLogger(__name__)
 
 
 @cve_api.get("/",
@@ -17,7 +20,23 @@ async def get_all_cve(repo: Annotated[CVERepository, Depends(get_cve_repository)
                       limit: Optional[int] = Query(10, description="Limit the number of CVERecords returned"),
                       offset: Optional[int] = Query(0, description="Offset for pagination")
                       ) -> Sequence[CVERecord]:
-    return await repo.get_all_cve(limit=limit, offset=offset)
+    cve_list = await repo.get_all_cve(limit=limit, offset=offset)
+    return [CVERecord.model_validate(cve) for cve in cve_list]
+
+
+@cve_api.get("/search",
+             name="Search CVERecords by Published Date Range",
+             description="Search CVERecords within a specified published date range")
+async def search_cve_by_date(
+        repo: Annotated[CVERepository, Depends(get_cve_repository)],
+        start_date: Optional[datetime] = Query(None, description="Start date for the search range "
+                                                                 "in ISO 8601 format (e.g., 2021-01-01T00:00:00Z)"),
+        end_date: Optional[datetime] = Query(None, description="End date for the search range "
+                                                               "in ISO 8601 format (e.g., 2021-12-31T23:59:59Z)")
+) -> Sequence[CVERecord]:
+    logging.warning(f"Searching CVERecords within {start_date} to {end_date}")
+    cve_list = await repo.search_cve_by_published_date(start_date=start_date, end_date=end_date)
+    return [CVERecord.model_validate(cve) for cve in cve_list]
 
 
 @cve_api.get("/{cve_id}",

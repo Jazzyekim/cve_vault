@@ -1,5 +1,6 @@
+import logging
 from collections.abc import Sequence
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 
 from db.models.cve import CVERecordDB
 from fastapi import Depends
@@ -11,6 +12,7 @@ from api_cve_service.schemas import CVERecord
 from db import deps
 from datetime import datetime
 
+logger = logging.getLogger('sqlalchemy_queries')
 
 class CVERepository:
     def __init__(self, db: Annotated[AsyncSession, Depends(deps.get_db_session)]):
@@ -38,6 +40,20 @@ class CVERepository:
     async def add_cve_batch(self, records: List[CVERecordDB]) -> None:
         self.db.add_all(records)
         await self.db.commit()
+
+    async def search_cve_by_published_date(self, start_date: Optional[datetime], end_date: Optional[datetime]
+                                           ) -> Sequence[CVERecordDB]:
+        stmt = select(CVERecordDB).order_by(CVERecordDB.id)
+
+        if start_date:
+            stmt = stmt.where(CVERecordDB.date_published >= start_date)
+        if end_date:
+            stmt = stmt.where(CVERecordDB.date_published <= end_date)
+
+        logger.info("Executing query: %s", stmt.compile(compile_kwargs={"literal_binds": True}))
+
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
 
 async def get_cve_repository(db: Annotated[AsyncSession, Depends(deps.get_db_session)]) -> CVERepository:
