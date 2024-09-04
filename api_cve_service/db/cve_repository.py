@@ -8,7 +8,7 @@ from sqlalchemy.future import select
 
 from api_cve_service.schemas import CVERecord
 
-from api_cve_service import deps
+from db import deps
 
 
 class CVERepository:

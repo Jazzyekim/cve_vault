@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from api_cve_service.routes.router import api_route
-from db.engine import get_engine
+from db.deps import get_engine
 from db.models import Base
 
 
