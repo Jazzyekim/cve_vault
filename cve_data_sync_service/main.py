@@ -6,6 +6,7 @@ from subprocess import CalledProcessError
 import aiohttp
 
 from cve_data_sync_service import SYNC_CONFIG
+from cve_data_sync_service.delta_log import get_last_fetch_time, get_and_process_updates
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -36,26 +37,23 @@ async def is_git_installed():
 
 
 async def fetch_cve_updates():
-    url = SYNC_CONFIG['commits_url']
-    logging.info(f'Fetching cve updates from {url}')
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                updates = await response.json()
-                return updates
-            else:
-                logging.error(f"Failed to fetch CVE updates: {response.status}")
-                return None
+    clone_dir = SYNC_CONFIG['data_dir']
+
+    if not os.path.exists(clone_dir):
+        logging.error(f"Directory {clone_dir} does not exist. Cannot pull updates.")
+        return
+    try:
+        logging.info(f"Pulling latest changes in {clone_dir}...")
+        await run_command(["git", "-C", clone_dir, "pull", "origin", "main"])
+        logging.info(f"Repository updated successfully in {clone_dir}")
+    except CalledProcessError as e:
+        logging.error(f"Error pulling repository: {e}")
 
 
 async def update_cve_data():
-    updates = await fetch_cve_updates()
-    if updates:
-
-        logging.info(f"Fetched {len(updates)} updates.")
-
-    else:
-        logging.info("No updates fetched.")
+    last_fetch_time = await get_last_fetch_time()
+    await fetch_cve_updates()
+    await get_and_process_updates(last_fetch_time)
 
 
 async def schedule_cve_updates(interval_hours):

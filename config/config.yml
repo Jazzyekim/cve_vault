@@ -5,5 +5,6 @@ cve_repo:
   repo_url: "https://github.com/CVEProject/cvelistV5"
   commits_url: "${cve_repo.repo_url}/commits"
   data_dir: cve_data
+  delta_log_path: "${cve_repo.data_dir}/cves/deltaLog.json"
   update_interval_hours: 6
   batch_size: 1000
