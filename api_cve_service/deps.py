@@ -3,7 +3,7 @@ from collections.abc import AsyncIterator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from api_cve_service.db.engine import get_engine
+from db.engine import get_engine
 
 
 async def get_db_session() -> AsyncIterator[AsyncSession]:
