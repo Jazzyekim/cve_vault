@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from api_cve_service.db import DB_CONFIG
+from db import DB_CONFIG
 
 
 class DatabaseEngineSingleton:
