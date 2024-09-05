@@ -102,20 +102,19 @@ from db.cve_repository import CVERepository
 async def get_and_process_updates(last_fetch_time):
     new_entries = await read_delta_log(last_fetch_time)
 
-    for entry in new_entries:
-        cve_ids = extract_cve_ids(entry)
-        for cve in cve_ids['new_cves']:
-            file_path = await search_file(cve)
-            cve_record = await DbDataLoader().cve_from_file(file_path)
-            async for db in get_db_session():
-                async with db as session:
+    async for db in get_db_session():
+        async with db as session:
+            repo = CVERepository(session)
+            for entry in new_entries:
+                cve_ids = extract_cve_ids(entry)
+                for cve in cve_ids['new_cves']:
+                    file_path = await search_file(cve)
+                    cve_record = await DbDataLoader().cve_from_file(file_path)
                     logger.info("NEW record: %s", cve_record)
-                    await CVERepository(session).add_cve_record(CVERecord.model_validate(cve_record))
-        for cve in cve_ids["updated_cves"]:
-            file_path = await search_file(cve)
-            cve_record = await DbDataLoader().cve_from_file(file_path)
-            async for db in get_db_session():
-                async with db as session:
+                    await repo.add_cve_record(CVERecord.model_validate(cve_record))
+                for cve in cve_ids["updated_cves"]:
+                    file_path = await search_file(cve)
+                    cve_record = await DbDataLoader().cve_from_file(file_path)
                     logger.info("UPDATE record: %s", cve_record)
                     await CVERepository(session).update_cve_record(cve_record.id, CVERecord.model_validate(cve_record))
 
